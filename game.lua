@@ -68,7 +68,9 @@ local function new(gridWidth, gridHeight, mineCount)
 end
 
 function game:update(dt)
-  self.timer = self.timer + dt
+  if not self.outcome then
+    self.timer = self.timer + dt
+  end
 
   local ix, iy = 0, 0
   if love.keyboard.isDown("w") then iy = iy - 1 end
@@ -199,15 +201,14 @@ function game:mousereleased(x, y, button)
     local facex = ww / 2 - 26 * 3 / 2
     if ox > facex and ox < facex + 26 * 3
     and oy < 26 * 3 then
-      print("oi")
       current = new(self.gridWidth, self.gridHeight, self.mineCount)
       gameState = "playing"
-    else
+    elseif not self.outcome then
       self:floodFill(cellx, celly)
       self.lastClickX = cellx
       self.lastClickY = celly
     end
-  elseif button == 2 then
+  elseif button == 2 and not self.outcome then
     self:toggleFlag(cellx, celly)
   end
 end
@@ -231,12 +232,10 @@ function game:showCell(x, y)
 
   if self:getCell(x, y) == -1 then
     self.outcome = "lose"
-    gameState = "finish"
   end
 
   if self.uncoveredCells == 0 then
     self.outcome = "win"
-    gameState = "finish"
   end
 end
 

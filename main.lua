@@ -14,10 +14,6 @@ local mainMenu = require("mainmenu")
 local Game = require("game")
 
 gameState = "config"
-
--- Game state
--- Game loop
-
 current = nil
 
 local function playingOnKeyPressed(key)
@@ -65,12 +61,6 @@ local gameStateCallbacks = {
       current:draw()
     end,
   },
-  finish = {
-    keypressed = playingOnKeyPressed,
-    draw = function()
-      current:draw()
-    end,
-  }
 }
 
 local function callCallback(name, ...)

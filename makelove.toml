@@ -1,0 +1,9 @@
+name = "minesweeper"
+default_targets = ["win32", "win64", "appimage"]
+build_directory = "build"
+
+love_files = [
+    "+*",
+    "-*/.*",
+    "-./build/*",
+]

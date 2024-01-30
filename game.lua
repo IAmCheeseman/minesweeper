@@ -86,23 +86,22 @@ function game:draw()
     end
   end
 
-love.graphics.draw(assets.batch, 0, 0)
+  love.graphics.draw(assets.batch, 0, 0)
 
-love.graphics.origin()
+  love.graphics.origin()
 
-love.graphics.setColor(0.75, 0.75, 0.75)
-love.graphics.rectangle("fill", 0, 0, ww, fontHeight + 8)
-love.graphics.setColor(1, 0, 0)
-love.graphics.printf(self.mineCount - self.flagCount, 0, 0, ww, "left")
-love.graphics.printf(math.floor(self.timer), 0, 0, ww, "right")
+  love.graphics.setColor(0.75, 0.75, 0.75)
+  love.graphics.rectangle("fill", 0, 0, ww, 26 * 3)
+  assets.drawSegmented(self.mineCount - self.flagCount, 0, 0)
+  assets.drawSegmented(math.floor(self.timer), ww - 41 * 3, 0)
 
-if self.outcome == "lose" then
-  love.graphics.setColor(1, 0, 0)
-  love.graphics.printf("You lose!", 0, wh / 2 - fontHeight / 2, ww, "center")
-elseif self.outcome == "win" then
-  love.graphics.setColor(0, 1, 0)
-  love.graphics.printf("You win!", 0, wh / 2 - fontHeight / 2, ww, "center")
-end
+  if self.outcome == "lose" then
+    love.graphics.setColor(1, 0, 0)
+    love.graphics.printf("You lose!", 0, wh / 2 - fontHeight / 2, ww, "center")
+  elseif self.outcome == "win" then
+    love.graphics.setColor(0, 1, 0)
+    love.graphics.printf("You win!", 0, wh / 2 - fontHeight / 2, ww, "center")
+  end
 end
 
 function game:mousereleased(x, y, button)

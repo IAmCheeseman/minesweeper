@@ -84,7 +84,7 @@ function mainMenu.mousepressed(_, my)
 
     gameState = "playing"
 
-    game = Game(width, height, mines)
+    current = Game(width, height, mines)
   end
 end
 

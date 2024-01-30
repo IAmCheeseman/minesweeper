@@ -6,6 +6,67 @@ game.__index = game
 local font = love.graphics.getFont()
 local fontHeight = font:getHeight()
 
+local function new(gridWidth, gridHeight, mineCount)
+  local g = setmetatable({}, game)
+
+  local gridPxWidth, gridPxHeight = gridWidth * cellWidth, gridHeight * cellHeight
+  local camerax, cameray = gridPxWidth / 2, gridPxHeight / 2
+
+  g.gridWidth = gridWidth
+  g.gridHeight = gridHeight
+  g.gridPxWidth = gridPxWidth
+  g.gridPxHeight = gridPxHeight
+  g.mineCount = mineCount
+  g.uncoveredCells = gridWidth * gridHeight - mineCount
+  g.flagCount = 0
+  g.lastClickX = 0
+  g.lastClickY = 0
+  g.timer = 0
+  g.camerax = camerax
+  g.cameray = cameray
+  g.isPanning = false
+  g.zoom = 1
+  g.facePressed = false
+  g.outcome = nil
+  g.grid = {}
+
+  for _=1, gridWidth * gridHeight do
+    table.insert(g.grid, {shown=false, flagged=false, number=0})
+  end
+
+  for _=1, mineCount do
+    local x = love.math.random(0, gridWidth - 1)
+    local y = love.math.random(0, gridHeight - 1)
+
+    repeat
+      x = love.math.random(0, gridWidth - 1)
+      y = love.math.random(0, gridHeight - 1)
+    until g:getCell(x, y) ~= -1
+
+    g:setCell(x, y, -1)
+    g:incrementCell(x + 1, y,     1)
+    g:incrementCell(x - 1, y,     1)
+    g:incrementCell(x,     y + 1, 1)
+    g:incrementCell(x,     y - 1, 1)
+    g:incrementCell(x + 1, y + 1, 1)
+    g:incrementCell(x - 1, y - 1, 1)
+    g:incrementCell(x - 1, y + 1, 1)
+    g:incrementCell(x + 1, y - 1, 1)
+  end
+
+  while true do
+    local x = love.math.random(0, gridWidth - 1)
+    local y = love.math.random(0, gridHeight - 1)
+
+    if g:getCell(x, y) == 0 then
+      g:floodFill(x, y)
+      break
+    end
+  end
+
+  return g
+end
+
 function game:update(dt)
   self.timer = self.timer + dt
 
@@ -92,16 +153,31 @@ function game:draw()
 
   love.graphics.setColor(0.75, 0.75, 0.75)
   love.graphics.rectangle("fill", 0, 0, ww, 26 * 3)
+
+  love.graphics.setColor(1, 1, 1)
   assets.drawSegmented(self.mineCount - self.flagCount, 0, 0)
   assets.drawSegmented(math.floor(self.timer), ww - 41 * 3, 0)
 
+  local facex = ww / 2 - 26 * 3 / 2
+
+  local face = assets.normal
   if self.outcome == "lose" then
-    love.graphics.setColor(1, 0, 0)
-    love.graphics.printf("You lose!", 0, wh / 2 - fontHeight / 2, ww, "center")
+    face = assets.dead
   elseif self.outcome == "win" then
-    love.graphics.setColor(0, 1, 0)
-    love.graphics.printf("You win!", 0, wh / 2 - fontHeight / 2, ww, "center")
+    face = assets.cool
   end
+
+  if love.mouse.isDown(1) then
+    local mx, my = love.mouse.getPosition()
+    if mx > facex and mx < facex + 26 * 3
+      and my < 26 * 3 then
+      face = assets.pressed
+    elseif face == assets.normal then
+      face = assets.scared
+    end
+  end
+
+  assets.draw(face, facex, 0, 3)
 end
 
 function game:mousereleased(x, y, button)
@@ -111,15 +187,26 @@ function game:mousereleased(x, y, button)
   end
 
   local cx, cy = self:getCameraPosition()
+  local ox, oy = x, y
 
   x = cx + math.floor(x / self.zoom)
   y = cy + math.floor(y / self.zoom)
 
+  local ww = love.graphics.getWidth()
+
   local cellx, celly = math.floor(x / cellWidth), math.floor(y / cellHeight)
   if button == 1 then
-    self:floodFill(cellx, celly)
-    self.lastClickX = cellx
-    self.lastClickY = celly
+    local facex = ww / 2 - 26 * 3 / 2
+    if ox > facex and ox < facex + 26 * 3
+    and oy < 26 * 3 then
+      print("oi")
+      current = new(self.gridWidth, self.gridHeight, self.mineCount)
+      gameState = "playing"
+    else
+      self:floodFill(cellx, celly)
+      self.lastClickX = cellx
+      self.lastClickY = celly
+    end
   elseif button == 2 then
     self:toggleFlag(cellx, celly)
   end
@@ -232,66 +319,6 @@ function game:getCameraPosition()
   local tx = self.camerax - ww * 0.5 / self.zoom
   local ty = self.cameray - wh * 0.5 / self.zoom
   return tx, ty
-end
-
-local function new(gridWidth, gridHeight, mineCount)
-  local g = setmetatable({}, game)
-
-  local gridPxWidth, gridPxHeight = gridWidth * cellWidth, gridHeight * cellHeight
-  local camerax, cameray = gridPxWidth / 2, gridPxHeight / 2
-
-  g.gridWidth = gridWidth
-  g.gridHeight = gridHeight
-  g.gridPxWidth = gridPxWidth
-  g.gridPxHeight = gridPxHeight
-  g.mineCount = mineCount
-  g.uncoveredCells = gridWidth * gridHeight - mineCount
-  g.flagCount = 0
-  g.lastClickX = 0
-  g.lastClickY = 0
-  g.timer = 0
-  g.camerax = camerax
-  g.cameray = cameray
-  g.isPanning = false
-  g.zoom = 1
-  g.outcome = nil
-  g.grid = {}
-
-  for _=1, gridWidth * gridHeight do
-    table.insert(g.grid, {shown=false, flagged=false, number=0})
-  end
-
-  for _=1, mineCount do
-    local x = love.math.random(0, gridWidth - 1)
-    local y = love.math.random(0, gridHeight - 1)
-
-    repeat
-      x = love.math.random(0, gridWidth - 1)
-      y = love.math.random(0, gridHeight - 1)
-    until g:getCell(x, y) ~= -1
-
-    g:setCell(x, y, -1)
-    g:incrementCell(x + 1, y,     1)
-    g:incrementCell(x - 1, y,     1)
-    g:incrementCell(x,     y + 1, 1)
-    g:incrementCell(x,     y - 1, 1)
-    g:incrementCell(x + 1, y + 1, 1)
-    g:incrementCell(x - 1, y - 1, 1)
-    g:incrementCell(x - 1, y + 1, 1)
-    g:incrementCell(x + 1, y - 1, 1)
-  end
-
-  while true do
-    local x = love.math.random(0, gridWidth - 1)
-    local y = love.math.random(0, gridHeight - 1)
-
-    if g:getCell(x, y) == 0 then
-      g:floodFill(x, y)
-      break
-    end
-  end
-
-  return g
 end
 
 return new

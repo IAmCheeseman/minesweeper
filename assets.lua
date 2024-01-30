@@ -7,6 +7,19 @@ local function defineCell(x, y)
   return love.graphics.newQuad(x * 16, y * 16, 16, 16, png:getDimensions())
 end
 
+local function defineFace(name, x, y)
+  assets[name] = love.graphics.newQuad(
+    x, y,
+    26, 26,
+    png:getDimensions())
+end
+
+defineFace("normal", 0, 71)
+defineFace("scared", 27, 71)
+defineFace("dead", 54, 71)
+defineFace("cool", 81, 71)
+defineFace("pressed", 108, 71)
+
 assets.shown     = defineCell(0, 1)
 assets.hidden    = defineCell(1, 1)
 assets.flag      = defineCell(2, 1)
@@ -44,6 +57,10 @@ function assets.drawSegmented(number, x, y)
   love.graphics.draw(png, assets.segmented[hundreds], x,          y, 0, 3)
   love.graphics.draw(png, assets.segmented[tens],     x + 13 * 3, y, 0, 3)
   love.graphics.draw(png, assets.segmented[ones],     x + 26 * 3, y, 0, 3)
+end
+
+function assets.draw(quad, x, y, s)
+  love.graphics.draw(png, quad, x, y, 0, s)
 end
 
 return assets

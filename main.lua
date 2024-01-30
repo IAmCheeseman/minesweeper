@@ -18,11 +18,11 @@ gameState = "config"
 -- Game state
 -- Game loop
 
-game = nil
+current = nil
 
 local function playingOnKeyPressed(key)
   if key == "r" then
-    game = Game(game.gridWidth, game.gridHeight, game.mineCount)
+    current = Game(current.gridWidth, current.gridHeight, current.mineCount)
     gameState = "playing"
   end
 
@@ -41,34 +41,34 @@ local gameStateCallbacks = {
   playing = {
     keypressed = playingOnKeyPressed,
     mousereleased = function(...)
-      game:mousereleased(...)
+      current:mousereleased(...)
     end,
     wheelmoved = function(_, y)
-      game.zoom = game.zoom + y * 0.5
-      if game.zoom > 5 then
-        game.zoom = 5
-      elseif game.zoom < 1 then
-        game.zoom = 1
+      current.zoom = current.zoom + y * 0.5
+      if current.zoom > 5 then
+        current.zoom = 5
+      elseif current.zoom < 1 then
+        current.zoom = 1
       end
     end,
     mousemoved = function(_, _, relx, rely)
       if love.mouse.isDown(1) then
-        game.camerax = game.camerax - relx / game.zoom
-        game.cameray = game.cameray - rely / game.zoom
-        game.isPanning = true
+        current.camerax = current.camerax - relx / current.zoom
+        current.cameray = current.cameray - rely / current.zoom
+        current.isPanning = true
       end
     end,
     update = function(dt)
-      game:update(dt)
+      current:update(dt)
     end,
     draw = function()
-      game:draw()
+      current:draw()
     end,
   },
   finish = {
     keypressed = playingOnKeyPressed,
     draw = function()
-      game:draw()
+      current:draw()
     end,
   }
 }
@@ -106,11 +106,11 @@ end
 
 function love.update(dt)
   callCallback("update", dt)
-  if game then
+  if current then
     love.window.setTitle(
       ("Minesweeper - %dx%d - %d/%d"):format(
-        game.gridWidth, game.gridHeight,
-        game.flagCount, game.mineCount))
+        current.gridWidth, current.gridHeight,
+        current.flagCount, current.mineCount))
   end
 end
 

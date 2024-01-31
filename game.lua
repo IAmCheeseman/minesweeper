@@ -63,6 +63,8 @@ local function new(gridWidth, gridHeight, mineCount)
 
     if g:getCell(x, y) == 0 then
       g:floodFill(x, y)
+      g.camerax = x * cellWidth
+      g.cameray = y * cellHeight
       break
     end
   end

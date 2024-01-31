@@ -33,7 +33,7 @@ for i=1, 8 do
 end
 
 assets.segmented = {}
-for i=0, 9 do
+for i=0, 10 do -- Go to 10 to include the - character
   assets.segmented[i] = love.graphics.newQuad(
       i * 12, 48,
       12, 23,
@@ -56,13 +56,17 @@ for i=1, 3 do
 end
 
 function assets.drawSegmented(number, x, y)
-  if number < 0 then
-    number = 0
-  end
-
   -- Use seperateDigits function to divide the number into a table of digits
   local digits = separateDigits(number)
-  digits = padWithZeros(digits, 3) -- Ensure there is never less than 3 digits displayed
+
+  -- If the number is negative, prepend "0-"
+  if number < 0 then
+    table.insert(digits, 1, 10) -- 10 is our character code for -
+    table.insert(digits, 1, 0)
+  end
+
+  -- If there are less than 3 digits, add zeros!
+  digits = padWithZeros(digits, 3)
 
   -- Adjusting the x/y to display the characters in the right place
   x = x + 2 * 3
@@ -102,6 +106,7 @@ end
 
 -- Written by yours truly, ChatGPT
 function separateDigits(number)
+    local number = math.abs(number) -- To support negative numbers
     local digits = {}
     while number > 0 do
         local digit = number % 10

@@ -46,6 +46,9 @@ assets.segmentedBg = love.graphics.newQuad(
   png:getDimensions())
 
 function assets.drawSegmented(number, x, y)
+  if number < 0 then
+    number = 0
+  end
   local ones, tens, hundreds
   hundreds = number >= 100 and math.floor(number / 100) or 0
   tens = number >= 10 and math.floor((number - hundreds * 100) / 10) or 0

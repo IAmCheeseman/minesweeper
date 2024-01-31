@@ -15,7 +15,7 @@ local presets = {
   easy = {width="8", height="8", mines="10"},
   medium = {width="11", height="11", mines="30"},
   hard = {width="16", height="16", mines="80"},
-  catman = {width="50", height="50", mines="1000"}
+  catman = {width="50", height="50", mines="999"}
 }
 local fields = {"width", "height", "mines"}
 local currentField = 1

@@ -3,6 +3,8 @@ local assets = require("assets")
 local game = {}
 game.__index = game
 
+local maxFloodFillDepth = 128
+
 local font = love.graphics.getFont()
 local fontHeight = font:getHeight()
 
@@ -28,6 +30,7 @@ local function new(gridWidth, gridHeight, mineCount)
   g.zoom = 1
   g.facePressed = false
   g.outcome = nil
+  g.floodFillQueue = {}
   g.grid = {}
 
   for _=1, gridWidth * gridHeight do
@@ -103,6 +106,10 @@ function game:update(dt)
     self.zoom = 5
   elseif self.zoom < 1 then
     self.zoom = 1
+  end
+
+  for _, pos in ipairs(self.floodFillQueue) do
+    self:floodFill(pos.x, pos.y)
   end
 end
 
@@ -285,7 +292,14 @@ function game:incrementCell(x, y, by)
   end
 end
 
-function game:floodFill(x, y)
+function game:floodFill(x, y, depth)
+  depth = depth or 0
+
+  if depth > maxFloodFillDepth then
+    table.insert(self.floodFillQueue, {x=x, y=y})
+    return
+  end
+
   if x >= self.gridWidth or x < 0 then
     return
   end
@@ -303,14 +317,14 @@ function game:floodFill(x, y)
     return
   end
 
-  self:floodFill(x + 1, y)
-  self:floodFill(x - 1, y)
-  self:floodFill(x,     y + 1)
-  self:floodFill(x,     y - 1)
-  self:floodFill(x + 1, y + 1)
-  self:floodFill(x - 1, y - 1)
-  self:floodFill(x - 1, y + 1)
-  self:floodFill(x + 1, y - 1)
+  self:floodFill(x + 1, y,     depth + 1)
+  self:floodFill(x - 1, y,     depth + 1)
+  self:floodFill(x,     y + 1, depth + 1)
+  self:floodFill(x,     y - 1, depth + 1)
+  self:floodFill(x + 1, y + 1, depth + 1)
+  self:floodFill(x - 1, y - 1, depth + 1)
+  self:floodFill(x - 1, y + 1, depth + 1)
+  self:floodFill(x + 1, y - 1, depth + 1)
 end
 
 function game:getCameraPosition()

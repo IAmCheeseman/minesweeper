@@ -62,7 +62,7 @@ function assets.drawSegmented(number, x, y)
 
   -- Use seperateDigits function to divide the number into a table of digits
   local digits = separateDigits(number)
-  -- digits = padWithZeros(digits, 3) -- Ensure there is never less than 3 digits displayed
+  digits = padWithZeros(digits, 3) -- Ensure there is never less than 3 digits displayed
 
   -- Adjusting the x/y to display the characters in the right place
   x = x + 2 * 3

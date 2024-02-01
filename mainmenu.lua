@@ -49,7 +49,7 @@ function mainMenu.keypressed(key)
   end
 end
 
-function mainMenu.mousepressed(_, my)
+function mainMenu.mousereleased(_, my)
   local button = function(y)
     return my > y and my < y + fontHeight
   end

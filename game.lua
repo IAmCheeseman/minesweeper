@@ -212,10 +212,32 @@ function game:mousereleased(x, y, button)
     and oy < 26 * 3 then
       current = new(self.gridWidth, self.gridHeight, self.mineCount)
       gameState = "playing"
+    elseif self:isCellShown(cellx, celly) then
+      local total = self:getCell(cellx, celly)
+      local tally = 0
+      local neighbors = {
+        cellx + 1, celly,
+        cellx, celly + 1,
+        cellx - 1, celly,
+        cellx, celly - 1,
+        cellx + 1, celly + 1,
+        cellx + 1, celly - 1,
+        cellx - 1, celly + 1,
+        cellx - 1, celly - 1,
+      }
+      for i=1, #neighbors, 2 do
+        if self:isFlagged(neighbors[i], neighbors[i + 1]) then
+          tally = tally + 1
+        end
+      end
+
+      if tally == total then
+        for i=1, #neighbors, 2 do
+          self:floodFill(neighbors[i], neighbors[i + 1])
+        end
+      end
     elseif not self.outcome then
       self:floodFill(cellx, celly)
-      self.lastClickX = cellx
-      self.lastClickY = celly
     end
   elseif button == 2 and not self.outcome then
     self:toggleFlag(cellx, celly)
@@ -238,6 +260,8 @@ end
 function game:showCell(x, y)
   self.grid[self:getCellIndex(x, y)].shown = true
   self.uncoveredCells = self.uncoveredCells - 1
+  self.lastClickX = x
+  self.lastClickY = y
 
   if self:getCell(x, y) == -1 then
     self.outcome = "lose"
@@ -253,6 +277,12 @@ function game:isCellShown(x, y)
 end
 
 function game:isFlagged(x, y)
+  if x >= self.gridWidth or x < 0 then
+    return false
+  end
+  if y >= self.gridHeight or y < 0 then
+    return false
+  end
   return self.grid[self:getCellIndex(x, y)].flagged
 end
 
@@ -298,7 +328,9 @@ function game:floodFill(x, y, depth)
   depth = depth or 0
 
   if depth > maxFloodFillDepth then
-    table.insert(self.floodFillQueue, {x=x, y=y})
+    if self:getCell(x, y) ~= -1 then
+      table.insert(self.floodFillQueue, {x=x, y=y})
+    end
     return
   end
 

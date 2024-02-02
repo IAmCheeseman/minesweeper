@@ -294,6 +294,10 @@ function game:toggleFlag(x, y)
     return
   end
 
+  if self:isCellShown(x, y) then
+    return
+  end
+
   local flagged = self:isFlagged(x, y)
   self.grid[self:getCellIndex(x, y)].flagged = not flagged
   if flagged then
